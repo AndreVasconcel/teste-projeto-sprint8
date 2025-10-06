@@ -1,0 +1,7 @@
+boto3==1.40.9
+langchain==0.3.27
+langchain_aws==0.2.35
+langchain_community==0.3.30
+python-telegram-bot==22.5
+chromadb==0.4.24
+pypdf
