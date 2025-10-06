@@ -7,12 +7,20 @@ from langchain_community.vectorstores import Chroma
 from langchain_aws import BedrockEmbeddings, BedrockLLM
 
 session = boto3.Session()
+s3_client = session.client("s3", region_name="us-east-1")
 bedrock_client = session.client("bedrock-runtime", region_name="us-east-1")
 
-loaders = [PyPDFLoader("24-acordao-embargos.pdf")]
-docs = []
-for loader in loaders:
-    docs.extend(loader.load())
+bucket_name = "projeto04-rag"
+pdf_key = "24-acordao-embargos.pdf"
+
+pdf_obj = s3_client.get_object(Bucket=bucket_name, Key=pdf_key)
+pdf_bytes = pdf_obj['Body'].read()
+
+with open("/tmp/temp.pdf", "wb") as f:
+    f.write(pdf_bytes)
+
+loader = PyPDFLoader("/tmp/temp.pdf")
+docs = loader.load()
 
 r_splitter = RecursiveCharacterTextSplitter(
     chunk_size=6000,
@@ -47,16 +55,12 @@ Pergunta: {question}
 
 Resposta detalhada:
 """
-
 prompt = PromptTemplate.from_template(QUERY_PROMPT_TEMPLATE)
 
 llm = BedrockLLM(
     model_id="us.deepseek.r1-v1:0",
     client=bedrock_client,
-    model_kwargs={
-        "max_tokens": 2048, 
-        "temperature": 0.2
-        }
+    model_kwargs={"max_tokens": 2048, "temperature": 0.2}
 )
 
 qa_chain = RetrievalQA.from_chain_type(
