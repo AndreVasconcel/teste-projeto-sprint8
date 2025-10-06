@@ -32,7 +32,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     await update.message.reply_text(resposta)
 
 def main():
-    application = ApplicationBuilder().token("token").build()
+    application = ApplicationBuilder().token("8113448825:AAGXnAl5NZx54RRc74it6EEI2GJ_ym6SXdg").build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.run_polling()
