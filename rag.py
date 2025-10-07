@@ -72,14 +72,8 @@ llm = BedrockLLM(
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
-    retriever=vector_store.as_retriever(
-        search_kwargs={
-            "k": 5, 
-            "score_threshold": 0.7 
-        }
-    ),
+    retriever=vector_store.as_retriever(search_kwargs={"k": 5}),
     return_source_documents=True,
-    chain_type="stuff",  
     chain_type_kwargs={"prompt": prompt}
 )
 
