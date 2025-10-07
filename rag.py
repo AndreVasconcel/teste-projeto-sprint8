@@ -41,32 +41,45 @@ vector_store = Chroma.from_documents(
 )
 
 QUERY_PROMPT_TEMPLATE = """\
-Responda à pergunta com base exclusivamente no contexto fornecido.
-Explique de forma detalhada, trazendo a fundamentação jurídica e 
-fazendo referência às passagens relevantes do texto. 
+Você é um assistente jurídico especializado. Responda à pergunta com base EXCLUSIVAMENTE no contexto fornecido.
 
-Se a resposta estiver no contexto, desenvolva com clareza e completeza. 
-Não invente informações fora do contexto.
+INSTRUÇÕES:
+- Seja conciso e direto
+- Estruture a resposta em parágrafos curtos
+- Use **negrito** apenas para termos jurídicos importantes
+- Não repita informações desnecessariamente
+- Se não encontrar informação suficiente no contexto, diga que não há dados suficientes
+- Mantenha a resposta entre 100-300 palavras
 
 Contexto:
 {context}
 
 Pergunta: {question}
 
-Resposta detalhada:
-"""
+Resposta:"""
 prompt = PromptTemplate.from_template(QUERY_PROMPT_TEMPLATE)
 
 llm = BedrockLLM(
     model_id="us.deepseek.r1-v1:0",
     client=bedrock_client,
-    model_kwargs={"max_tokens": 2048, "temperature": 0.2}
+    model_kwargs={
+        "max_tokens": 1024, 
+        "temperature": 0.1,  
+        "top_p": 0.9,
+        "stop_sequences": ["\n\n"]  
+    }
 )
 
 qa_chain = RetrievalQA.from_chain_type(
     llm=llm,
-    retriever=vector_store.as_retriever(search_kwargs={"k": 7}),
+    retriever=vector_store.as_retriever(
+        search_kwargs={
+            "k": 5, 
+            "score_threshold": 0.7 
+        }
+    ),
     return_source_documents=True,
+    chain_type="stuff",  
     chain_type_kwargs={"prompt": prompt}
 )
 
